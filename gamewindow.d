@@ -7,6 +7,9 @@ import meat.keyboard;
 
 import meat.window;
 import meat.camera;
+import meat.mouse;
+
+import derelict.sdl2.sdl;
 
 import std.datetime;
 debug import std.stdio;
@@ -23,6 +26,10 @@ debug import std.stdio;
 class GameWindow: Window
 {
 public:
+	Mouse mouse() @property
+		{ return this._mouse;}
+	Camera camera() @property
+		{ return this._camera;}
 	/++Currently rendering and updating grid.+/
 	Grid grid;
 	/++Construct a new GameWindow, with a title, position, and size.+/
@@ -30,6 +37,7 @@ public:
 		{ 
 			super( title, x, y, width,height); 
 			this._camera =new Camera();
+			this._mouse =new Mouse();
 			this._tickedLast =Clock.currTime;
 		}
 protected:
@@ -48,22 +56,29 @@ protected:
 		if( this._camera.velx < 2 &&this._camera.velx > -2)
 		{
 			if( keyboard.keyDown(Key.D) )
-				{ this._camera.velx -=0.005f; }
-			else if( keyboard.keyDown(Key.A) )
 				{ this._camera.velx +=0.005f; }
+			else if( keyboard.keyDown(Key.A) )
+				{ this._camera.velx -=0.005f; }
 			else
 				{ this._camera.velx *= 0.9f; }
 		}
 		if( this._camera.vely < 2 &&this._camera.vely > -2)
 		{
 			if( keyboard.keyDown(Key.W) )
-				{ this._camera.vely -=0.005f; }
-			else if( keyboard.keyDown(Key.S) )
 				{ this._camera.vely +=0.005f; }
+			else if( keyboard.keyDown(Key.S) )
+				{ this._camera.vely -=0.005f; }
 			else
 				{ this._camera.vely *= 0.9f; }
 		}
 		this._camera.update();
+	}
+	override void processEvent( SDL_Event event)
+	{
+		if( event.type == SDL_MOUSEMOTION)
+		{
+			this._mouse.update( event.motion.x, event.motion.y);
+		}
 	}
 	/++
 	+ Begin openGl, and ask the Grid to render.
@@ -74,7 +89,7 @@ protected:
 		glClear( GL_COLOR_BUFFER_BIT );
 		
 		glPushMatrix();
-		glTranslatef( _camera.x, _camera.y, 0f );
+		glTranslatef( -_camera.x, -_camera.y, 0f );
 
 		this.grid.render();
 		glPopMatrix();
@@ -111,4 +126,5 @@ protected:
 private:
 	SysTime _tickedLast;
 	Camera _camera;
+	Mouse _mouse;
 }
