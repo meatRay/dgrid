@@ -53,6 +53,7 @@ protected:
 			this._tickedLast =Clock.currTime;
 			this.grid.update();
 		}
+		//Dehardcode max speed.
 		if( this._camera.velx < 2 &&this._camera.velx > -2)
 		{
 			if( keyboard.keyDown(Key.D) )
@@ -62,7 +63,7 @@ protected:
 			else
 				{ this._camera.velx *= 0.9f; }
 		}
-		if( this._camera.vely < 2 &&this._camera.vely > -2)
+		if( this._camera.vely < 2 &&this._camera.vely > -2 )
 		{
 			if( keyboard.keyDown(Key.W) )
 				{ this._camera.vely +=0.005f; }
@@ -73,11 +74,11 @@ protected:
 		}
 		this._camera.update();
 	}
-	override void processEvent( SDL_Event event)
+	override void processEvent( SDL_Event event )
 	{
-		if( event.type == SDL_MOUSEMOTION)
+		if( event.type == SDL_MOUSEMOTION )
 		{
-			this._mouse.update( event.motion.x, event.motion.y);
+			this._mouse.update( event.motion.x, event.motion.y );
 		}
 	}
 	/++
@@ -102,12 +103,15 @@ protected:
 	{
 		debug writefln( "Beginning load");
 		
-		glClearColor( 0.317, 0.639, 0.152, 1.0);
+		//dehardcode
+		glClearColor( 0.317, 0.639, 0.152, 1.0 );
 		
 		glViewport( 0, 0, width, height);
 		glMatrixMode( GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho( -10f, 10f, -10f/aspectRatio, 10f/aspectRatio, -1f, 1f);
+		
+		//zoom
+		glOrtho( -10f, 10f, -10f/aspectRatio, 10f/aspectRatio, -1f, 1f );
 		glMatrixMode( GL_MODELVIEW);
 	}
 	/++
@@ -120,7 +124,7 @@ protected:
 		glViewport( 0, 0, width, height );
 		glMatrixMode( GL_PROJECTION );
 		glLoadIdentity();
-		glOrtho(-1f, 1f, -1f/aspectRatio, 1f/aspectRatio, -1f, 1f);
+		glOrtho(-10f, 10f, -10f/aspectRatio, 10f/aspectRatio, -1f, 1f );
 		glMatrixMode( GL_MODELVIEW );
 	}
 private:
