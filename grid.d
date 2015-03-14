@@ -1,6 +1,7 @@
 /++Authors: Syphist, meatRay+/
 module dgrid.grid;
 
+import dgrid.thing;
 import dgrid.actor;
 import meat.window;
 
@@ -13,28 +14,6 @@ debug import std.stdio;
 import derelict.sdl2.sdl;
 import derelict.sdl2.image;
 import std.datetime: Duration, dur;
-
-static this()
-{
-	DerelictSDL2Image.load();
-	IMG_Init( IMG_INIT_PNG);
-}
-static ~this()
-{ IMG_Quit(); }
-
-abstract class Thing
-{
-public:
-	Direction direction =Direction.north;
-	Grid grid;
-	Position position;
-	
-	this(this T)()
-	{
-		this.name =T.stringof;
-	}
-	string name;
-}
 
 /++
 + Store Things, Iterate actor actions and render them.
@@ -49,26 +28,18 @@ public:
 	{
 		this.ticktime =dur!"seconds"(1);
 	}
-	~this()
-	{
-		foreach( texture; _textures)
-		{
-			glDeleteTextures( 1, &texture);
-		}
-	}
+	
 	/++
 	+ Add a Thing to the Grid's Thing collection,
 	+ and loadClass() its type.
 	++/
-	void addThing( Thing actor)
+	void addThing( Thing actor )
 	{ 
-		if ( !loadTexture( actor.name))
+		if ( actor.name !in _textures )
 		{
-			//actor.name ="Thing";
-			//loadTexture( "Thing");
-			//debug writeln( "Warning! Reverted actor's texture name to Thing.png\nEither supply a correct name or an existing image.");
+			loadTexture( actor.name );
 		}
-		this._things.stableInsert( actor);
+		this._things.stableInsert( actor );
 		actor.grid =this;
 	}
 	
@@ -91,38 +62,18 @@ public:
 	void rmvThing( Thing actor)
 		{ /+this._things.linearRemove( find( _things[], actor).take(1));+/
 		this._rmvs.insert( actor);}
-	/++
-	+ Loads a texture.
-	+ Returns: The texture's buffer address if successful.
-	+ 0 if error occurs loading.
-	+/
-	uint loadTexture( string name)
+		
+	void loadTexture( string name )
 	{
 		debug writefln( "Loading texture \"%s\"..", name);
-		if(name !in _textures)
+		Image image = new Image();
+		if ( !image.load(`img\` ~name ~`.png`))
 		{
-			_textures[name] =0;
-			glGenTextures( 1, &_textures[name]);
-			SDL_Surface* tex =IMG_Load( cast(const(char)*)(`img\` ~name ~`.png`) );
-			if( tex is null)
-			{
-				debug writeln( "Texture does not exist!");
-				return 0;
-			}
-			glBindTexture( GL_TEXTURE_2D, _textures[name]);
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, tex.w, tex.h, 0, GL_RGBA, GL_UNSIGNED_BYTE, cast(const(void)*)tex.pixels);
-			glBindTexture( GL_TEXTURE_2D, 0);
-			debug writeln( "Success!");
+			debug writeln( "Texture does not exist!");
+			return;
 		}
-		else
-		{
-			//debug writeln( "Texture already loaded.");
-		}
-		return _textures[name];
+		_textures[name] =image;
+		debug writeln( "Success!");
 	}
 	
 	/++
@@ -131,28 +82,12 @@ public:
 	+/
 	void render()
 	{
-		glEnableClientState( GL_VERTEX_ARRAY);
-		glEnableClientState( GL_TEXTURE_COORD_ARRAY);
-		glEnable( GL_TEXTURE_2D);
-		glEnable( GL_BLEND);
-		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glColor4f( 1f, 1f, 1f, 1f);
-		
-		glVertexPointer(2, GL_FLOAT, 0, verts.ptr);		
+		Imagebox.startRender();
 		foreach( actor; things)
 		{
-			glTexCoordPointer( 2, GL_FLOAT, 0, textsn.ptr);	
-			glPushMatrix();
-			glTranslatef( actor.position.x +0.5f, actor.position.y +0.5f, 0f);
-			glBindTexture( GL_TEXTURE_2D, _textures[actor.name]);
-			glRotatef( fuckshit(actor.direction), 0, 0, 1);
-			glDrawArrays( GL_QUADS, 0, 4);
-			glPopMatrix();
+			Imagebox.render( _textures[actor.name], actor.position.x, actor.position.y );
 		}
-		glDisable( GL_BLEND);
-		glDisable( GL_TEXTURE_2D);
-		glDisableClientState( GL_TEXTURE_COORD_ARRAY);
-		glDisableClientState( GL_VERTEX_ARRAY);
+		Imagebox.endRender();
 
 	}
 	/++Runs each Actor's act() method to update it. Called once-per ticktime Duration.+/
@@ -194,7 +129,7 @@ private:
 	DList!Thing _things;
 	DList!Thing _rmvs;
 	
-	uint[string] _textures;
+	Image[string] _textures;
 	static immutable float[8] verts =
 	[ 
 		-0.5f, -0.5f,
@@ -202,20 +137,6 @@ private:
 		0.5f, 0.5f,
 		-0.5f, 0.5f
 	];
-	static immutable(float)* texCoordFromDir( Direction direction) pure
-	{
-		switch( direction)
-		{
-			case( Direction.north):
-				return textsn.ptr;
-			case( Direction.east):
-				return textse.ptr;
-			case( Direction.south):
-				return textss.ptr;
-			default:
-				return textsw.ptr;
-		}
-	}
 	
 	/+ NOTHING HERE+/
 	static immutable float[8] textsn =
@@ -224,27 +145,6 @@ private:
 		1f, 1f,
 		1f, 0f,
 		0f, 0f
-	];
-	static immutable float[8] textse =
-	[ 
-		1f, 1f,
-		1f, 0f,
-		0f, 0f,
-		0f, 1f
-	];
-	static immutable float[8] textss =
-	[ 
-		1f, 0f,
-		0f, 0f,
-		0f, 1f,
-		1f, 1f
-	];
-	static immutable float[8] textsw =
-	[ 
-		0f, 0f,
-		0f, 1f,
-		1f, 1f,
-		1f, 0f
 	];
 	static float fuckshit( Direction direction)
 	{

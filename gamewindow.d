@@ -3,11 +3,11 @@ module dgrid.gamewindow;
 
 import dgrid.grid;
 import dgrid.actor;
-import meat.keyboard;
+import meatbox.keyboard;
 
-import meat.window;
-import meat.camera;
-import meat.mouse;
+import meatbox.window;
+import meatbox.camera;
+import meatbox.mouse;
 
 import derelict.sdl2.sdl;
 
