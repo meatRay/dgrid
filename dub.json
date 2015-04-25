@@ -1,0 +1,12 @@
+{
+	"name": "dgrid",
+	"description": "D implementation of Gridworld",
+	"copyright": "Copyright © 2015, meatRay",
+	"license": "BSL-1.0",
+	"authors": ["meatRay"],
+	"targetType": "library",
+	"dependencies": 
+	{
+		"meatbox": "~master"
+	}
+}

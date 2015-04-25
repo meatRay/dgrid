@@ -34,12 +34,22 @@ public:
 	Grid grid;
 	/++Construct a new GameWindow, with a title, position, and size.+/
 	this( string title, int x, int y, int width, int height)
-		{ 
-			super( title, x, y, width,height); 
-			this._camera =new Camera();
-			this._mouse =new Mouse();
-			this._tickedLast =Clock.currTime;
-		}
+	{ 
+		super( title, x, y, width,height); 
+		this._camera =new Camera();
+		this._mouse =new Mouse();
+		this._tickedLast =Clock.currTime;
+	}	
+	override void resize( int width, int height )
+	{
+		super.resize( width, height ); //Make implicit.
+		debug writefln( "resizing to  %d, by %d. Ratio of %2f", width, height, aspectRatio );
+		glViewport( 0, 0, width, height );
+		glMatrixMode( GL_PROJECTION );
+		glLoadIdentity();
+		glOrtho(-10f, 10f, -10f/aspectRatio, 10f/aspectRatio, -1f, 1f );
+		glMatrixMode( GL_MODELVIEW );
+	}
 protected:
 	/++
 	+ Ran on the Window's update Thread.
@@ -118,15 +128,6 @@ protected:
 	+ Recalulate openGl matrices.
 	+ See_Also: meat.window.Window.resize()
 	+/
-	override void resize()
-	{
-		debug writefln( "resizing to  %d, by %d. Ratio of %2f", width, height, aspectRatio );
-		glViewport( 0, 0, width, height );
-		glMatrixMode( GL_PROJECTION );
-		glLoadIdentity();
-		glOrtho(-10f, 10f, -10f/aspectRatio, 10f/aspectRatio, -1f, 1f );
-		glMatrixMode( GL_MODELVIEW );
-	}
 private:
 	SysTime _tickedLast;
 	Camera _camera;

@@ -1,4 +1,7 @@
-module Thing
+module dgrid.thing;
+
+import dgrid.vector;
+import dgrid.grid;
 
 abstract class Thing
 {

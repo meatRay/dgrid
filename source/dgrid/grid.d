@@ -3,7 +3,10 @@ module dgrid.grid;
 
 import dgrid.thing;
 import dgrid.actor;
-import meat.window;
+import dgrid.vector;
+import meatbox.window;
+import meatbox.image;
+import meatbox.imagebox;
 
 import std.container;
 import std.algorithm;
@@ -67,11 +70,9 @@ public:
 	{
 		debug writefln( "Loading texture \"%s\"..", name);
 		Image image = new Image();
-		if ( !image.load(`img\` ~name ~`.png`))
-		{
-			debug writeln( "Texture does not exist!");
-			return;
-		}
+		
+		//Exception handling pls.
+		image.load(`img\` ~name ~`.png`);
 		_textures[name] =image;
 		debug writeln( "Success!");
 	}
@@ -85,7 +86,10 @@ public:
 		Imagebox.startRender();
 		foreach( actor; things)
 		{
+			glPushMatrix();
+			glRotatef( fuckshit( actor.direction ), 0, 0, 1 );
 			Imagebox.render( _textures[actor.name], actor.position.x, actor.position.y );
+			glPopMatrix();
 		}
 		Imagebox.endRender();
 

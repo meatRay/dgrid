@@ -2,6 +2,7 @@
 module dgrid.actor;
 
 import dgrid.vector;
+import dgrid.thing;
 import dgrid.grid;
 
 /++

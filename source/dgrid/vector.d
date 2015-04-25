@@ -55,7 +55,8 @@ public alias rotateCcw =Rotation.counterClockwise;
 enum Rotation: byte{ none =0, clockwise =1, counterClockwise =-1};
 enum Direction: ubyte{ north =0x01, northeast =0x02, east =0x04, southeast =0x08, south =0x10, southwest =0x20, west =0x40, northwest =0x80};
 
-Direction rotateDir( Direction direction, Rotation rotation)
+alias rotateDir =rotateDirection; //Fix old code.
+Direction rotateDirection( Direction direction, Rotation rotation)
 {
 	if( rotation > 0)
 	{
